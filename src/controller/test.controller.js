@@ -1,7 +1,7 @@
-const db = require("../db/mysql");
+const { connection } = require("../db/mysql");
 
 const testController = (req, res) => {
-  db.query("SELECT * FROM users", (err, rows) => {
+  connection.query("SELECT * FROM users", (err, rows) => {
     if (err) {
       console.log("Error fetching data:", err);
       return res.status(500).json({ error: "Internal Server Error" });

@@ -1,17 +1,21 @@
 const mysql = require("mysql");
 
-const db = mysql.createConnection({
+const dbConfig = {
   host: "database-2.c3k4oka820lq.ap-northeast-1.rds.amazonaws.com",
   user: "admin",
   password: "omX6RN5xylBuQFekxvsA",
   database: "my_database",
-});
+};
+const connection = mysql.createConnection(dbConfig);
 
-db.connect((err) => {
+connection.connect((err) => {
   if (err) {
     console.log("failed to connect to database");
   }
 
   console.log("successfully connected to database");
 });
-module.exports = db;
+module.exports = {
+  connection,
+  dbConfig,
+};
