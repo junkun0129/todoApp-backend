@@ -1,13 +1,10 @@
 const { connection } = require("../db/mysql");
 const getAllTasks = (req, res) => {
-  console.log("isisisis");
   const sql = "select * from tasks";
   connection.query(sql, (err, rows) => {
-    console.log(rows, "rows");
     if (err) {
       return res.status(500).json({ message: "", result: "failed" });
     }
-    console.log(rows);
     return res.status(200).json({ result: "success", data: rows });
   });
 };

@@ -2,12 +2,13 @@ const jwt = require("jsonwebtoken");
 const config = require("./config");
 
 const auth = (req, res, next) => {
+  console.log(req.file, "file");
+  console.log(req.body);
   try {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
-    console.log(token);
     const decoded = jwt.verify(token, config.jwt.secret);
-    console.log(token);
+    console.log("nextいけたよ");
     next();
   } catch (err) {
     res.status(401).json({

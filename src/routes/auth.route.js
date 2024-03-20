@@ -5,9 +5,11 @@ const config = require("../../config");
 const { connection } = require("../db/mysql");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 router.post("/signup", (req, res) => {
   const { email, password, firstName, lastName } = req.body;
   const sql = "select * from accounts where email = ?";
+  const imageUrl = "/image/banny.png";
   connection.query(sql, [email], (err, rows) => {
     if (rows.length) {
       res
@@ -19,7 +21,14 @@ router.post("/signup", (req, res) => {
         VALUES (?, ?, ?, ?, ?, ?, NOW())
         `;
       const encodedPassword = bcrypt.hashSync(password, 10);
-      const values = [email, encodedPassword, firstName, lastName, "", "user"];
+      const values = [
+        email,
+        encodedPassword,
+        firstName,
+        lastName,
+        imageUrl,
+        "user",
+      ];
       connection.query(sql, values, (err, result) => {
         if (err) {
           res
@@ -40,6 +49,9 @@ router.post("/signin", (req, res) => {
   const sql = "select * from accounts where email = ?";
   const value = email;
   connection.query(sql, value, (err, rows) => {
+    if (err) {
+      res.status(500).json({ message: "errr", result: "failed" });
+    }
     if (!rows.length) {
       res.status(200).json({
         message: "そのメールアドレスで登録されているアカウントはありません",
@@ -68,7 +80,7 @@ router.post("/signin", (req, res) => {
                 email: user.email,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                img: user.profile_image_url,
+                img: process.env.BASE_DOMAIN + user.profile_image_url,
               },
               token,
             },
