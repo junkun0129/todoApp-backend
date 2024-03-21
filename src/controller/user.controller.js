@@ -26,7 +26,15 @@ const getUserProfile = (req, res) => {
         .json({ message: "取得できませんでした", result: "failed" });
     }
     if (rows) {
-      return res.status(200).json({ result: "success", data: rows[0] });
+      const user = rows[0];
+      const data = {
+        user_id: user.user_id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        img: process.env.BASE_DOMAIN + "/image/" + user.profile_image_url,
+      };
+      return res.status(200).json({ result: "success", data });
     } else {
       return res
         .status(500)

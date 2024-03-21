@@ -12,9 +12,12 @@ router.post("/signup", (req, res) => {
   const imageUrl = "/image/banny.png";
   connection.query(sql, [email], (err, rows) => {
     if (rows.length) {
-      res
+      return res
         .status(200)
-        .json({ message: "同じメールアドレスがすでに使われています" });
+        .json({
+          message: "同じメールアドレスがすでに使われています",
+          result: "failed",
+        });
     } else {
       const sql = `
         INSERT INTO accounts (email, password_hash, first_name, last_name, profile_image_url, role, last_login_date) 
@@ -31,12 +34,12 @@ router.post("/signup", (req, res) => {
       ];
       connection.query(sql, values, (err, result) => {
         if (err) {
-          res
+          return res
             .status(500)
             .json({ message: "データベースとの接続に失敗しました" });
         }
 
-        res
+        return res
           .status(200)
           .json({ message: "ユーザーの登録に成功しました", result: "success" });
       });
@@ -50,10 +53,10 @@ router.post("/signin", (req, res) => {
   const value = email;
   connection.query(sql, value, (err, rows) => {
     if (err) {
-      res.status(500).json({ message: "errr", result: "failed" });
+      return res.status(500).json({ message: "errr", result: "failed" });
     }
     if (!rows.length) {
-      res.status(200).json({
+      return res.status(200).json({
         message: "そのメールアドレスで登録されているアカウントはありません",
         result: "failed",
       });
@@ -61,7 +64,7 @@ router.post("/signin", (req, res) => {
       const user = rows[0];
       bcrypt.compare(password, user.password_hash, (err, result) => {
         if (!result) {
-          res
+          return res
             .status(200)
             .json({ message: "パスワードが違います", result: "failed" });
         } else {
@@ -72,7 +75,7 @@ router.post("/signin", (req, res) => {
             algorithm: config.jwtAlgorithm,
             expiresIn: is_stay_login ? config.expiresLong : config.expiresShort,
           });
-          res.status(200).json({
+          return res.status(200).json({
             message: "ログインに成功しました",
             result: "success",
             data: {
@@ -80,7 +83,8 @@ router.post("/signin", (req, res) => {
                 email: user.email,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                img: process.env.BASE_DOMAIN + user.profile_image_url,
+                img:
+                  process.env.BASE_DOMAIN + "/image/" + user.profile_image_url,
               },
               token,
             },

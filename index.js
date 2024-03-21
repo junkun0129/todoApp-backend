@@ -4,18 +4,23 @@ const http = require("http").Server(app);
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const fileUpload = require("express-fileupload");
+app.use(fileUpload());
 app.use(cors());
 require("dotenv").config();
 const imageDir = path.join(__dirname, "src", "user_folders");
 app.use(
   "/image",
   (req, res, next) => {
-    // Cache-Controlヘッダーを設定してキャッシュを制御
-    res.set("Cache-Control", "no-cache");
+    console.log(req.params, "params");
+    console.log(req.path, "path");
+    res.setHeader("Cache-Control", "no-cache");
+
     next();
   },
   express.static(imageDir)
 );
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use("/auth", require("./src/routes/auth.route"));
