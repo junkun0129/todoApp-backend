@@ -9,17 +9,7 @@ app.use(fileUpload());
 app.use(cors());
 require("dotenv").config();
 const imageDir = path.join(__dirname, "src", "user_folders");
-app.use(
-  "/image",
-  (req, res, next) => {
-    console.log(req.params, "params");
-    console.log(req.path, "path");
-    res.setHeader("Cache-Control", "no-cache");
-
-    next();
-  },
-  express.static(imageDir)
-);
+app.use("/image", express.static(imageDir));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
