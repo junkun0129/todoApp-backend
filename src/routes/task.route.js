@@ -3,9 +3,13 @@ const jwt = require("jsonwebtoken");
 const controller = require("../controller/task.controller");
 const { connection } = require("../db/mysql");
 const { auth } = require("../../auth");
-router.get("/list", auth, controller.getAllTasks);
-router.post("/create", auth, controller.createTask);
+router.get("/grouplist", auth, controller.getAllTaskGroups);
+router.post("/createtask", auth, controller.createTask);
+router.post("/createtaskgroup", auth, controller.createTaskGroup);
 router.post("/delete", auth, controller.deleteTask);
+router.post("/deletegroup", auth, controller.deleteTaskGroup);
+router.post("/updatetask", auth, controller.updateTask);
+router.post("/getdetail", auth, controller.getTaskDetail);
 router.post("/test", (req, res) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -17,7 +21,7 @@ router.post("/test", (req, res) => {
   console.log(decodedToken);
   imageFile.mv(uploadPath, (err) => {
     if (err) return res.status(500);
-    const sql = "update accounts set profile_image_url = ? where email = ?";
+    const sql = "update USERS set img = ? where email = ?";
     const values = [imageName, userEmail];
     connection.query(sql, values, (err, result) => {
       if (err) return res.status(500);
