@@ -22,12 +22,8 @@ router.post("/test", (req, res) => {
   imageFile.mv(uploadPath, (err) => {
     if (err) return res.status(500);
     const sql = "update USERS set img = ? where email = ?";
-    const timestamp =
-      new Date().getTime() + Math.floor(Math.random() * 1000000);
 
-    const updatedimgName = imageName + "?tm=" + timestamp;
-
-    const values = [updatedimgName, userEmail];
+    const values = [imageName, userEmail];
     connection.query(sql, values, (err, result) => {
       if (err) return res.status(500);
       return res

@@ -9,4 +9,11 @@ module.exports = {
   jwtAlgorithm: "HS256",
   expiresLong: "1d",
   expiresShort: "10s",
+  querys: {
+    tables: {
+      reports: "reports",
+      comments: "comments",
+      users: "users",
+    },
+  },
 };
