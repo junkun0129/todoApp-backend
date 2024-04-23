@@ -23,7 +23,12 @@ const createReport = (req, res) => {
 
 const getReports = (req, res) => {
   const { date } = req.query;
-  let sql = `select * from ${tables.reports} where 1=1`;
+  let sql = `SELECT r.title, u.user_name, u.img, r.created_at
+  FROM ${tables.reports} r
+  JOIN ${tables.users} u ON r.user_id = u.user_id
+  WHERE 1=1
+  `;
+
   if (date) {
     sql += `and created_at = ${date}`;
   }
