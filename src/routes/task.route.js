@@ -3,13 +3,8 @@ const jwt = require("jsonwebtoken");
 const controller = require("../controller/task.controller");
 const { connection } = require("../db/mysql");
 const { auth } = require("../../auth");
-router.get("/grouplist", auth, controller.getAllTaskGroups);
-router.post("/createtask", auth, controller.createTask);
-router.post("/createtaskgroup", auth, controller.createTaskGroup);
-router.post("/delete", auth, controller.deleteTask);
-router.post("/deletegroup", auth, controller.deleteTaskGroup);
-router.post("/updatetask", auth, controller.updateTask);
-router.post("/getdetail", auth, controller.getTaskDetail);
+router.get("/list", controller.getAllTasks);
+router.post("/create", controller.createTask);
 router.post("/test", (req, res) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

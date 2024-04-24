@@ -14,6 +14,7 @@ module.exports = {
       reports: "reports",
       comments: "comments",
       users: "users",
+      tasks: "tasks",
     },
   },
 };
