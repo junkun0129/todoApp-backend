@@ -4,7 +4,10 @@ const controller = require("../controller/task.controller");
 const { connection } = require("../db/mysql");
 const { auth } = require("../../auth");
 router.get("/list", controller.getAllTasks);
+router.get("/detail", controller.getTaskDetail);
 router.post("/create", controller.createTask);
+router.post("/update", controller.updateTask);
+router.post("/delete", controller.deleteTask);
 router.post("/test", (req, res) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

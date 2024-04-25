@@ -8,6 +8,7 @@ function generateRandomString(length) {
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
+  console.log(result, "nummmmmmmmmmmmmmber");
   return result;
 }
 
@@ -19,7 +20,17 @@ const getUserId = (req) => {
   return userId;
 };
 
+const postRequestHandler = (err, result, res) => {
+  if (!result) {
+    return res.status(200).json({ message: "失敗しました", result: "failed" });
+  } else {
+    console.log(result);
+    return res.status(200).json({ result: "success" });
+  }
+};
+
 module.exports = {
   generateRandomString,
   getUserId,
+  postRequestHandler,
 };
