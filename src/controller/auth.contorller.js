@@ -71,12 +71,12 @@ const signin = (req, res) => {
         } else {
           const payload = {
             user_id: user.user_id,
+            email: user.email,
           };
           const token = jwt.sign(payload, config.jwt.secret, {
             algorithm: config.jwtAlgorithm,
             expiresIn: is_stay_login ? config.expiresLong : config.expiresShort,
           });
-          console.log(token);
           return res.status(200).json({
             message: "ログインに成功しました",
             result: "success",

@@ -2,8 +2,6 @@ const jwt = require("jsonwebtoken");
 const config = require("./config");
 
 const auth = (req, res, next) => {
-  console.log(req.file, "file");
-  console.log(req.body);
   try {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
@@ -11,6 +9,7 @@ const auth = (req, res, next) => {
     console.log("nextいけたよ");
     next();
   } catch (err) {
+    console.log("いけなかったよおおよよおお");
     res.status(401).json({
       message: "認証できません",
     });

@@ -1,27 +1,83 @@
 const { connection } = require("../db/mysql");
 const { tables } = require("../../config").querys;
-const { generateRandomString, getUserId } = require("../utils/common.util");
+const {
+  generateRandomString,
+  getUserId,
+  transaction,
+} = require("../utils/common.util");
+const {
+  beginTransaction,
+  rollbackTransaction,
+} = require("../utils/common.util");
 const jwt = require("jsonwebtoken");
-const createReport = (req, res) => {
-  const { title, body } = req.body;
-  console.log(req.body, "body");
-  const user_id = getUserId(req);
-  console.log(user_id, "user_id");
-  const reportId = generateRandomString(35);
-  const sql = `insert into ${tables.reports} (report_id, user_id, title, body) values (?,?,?,?)`;
-  const values = [reportId, user_id, title, body];
-  connection.query(sql, values, (err, result) => {
-    if (!result) {
-      return res
-        .status(200)
-        .json({ message: "パスワードが違います", result: "failed" });
+
+const createReportApi = async (req, res) => {
+  const { date, dailyTasks } = req.body;
+
+  transaction(connection, res, async () => {
+    const rows = await doubleCheckReport(date);
+    console.log(rows, "rowssssssssssssss");
+    if (rows.length) {
     } else {
-      console.log(result);
+      const report_id = generateRandomString(35);
+      const user_id = getUserId(req);
+
+      await createReport(date, user_id, report_id);
+      await createDailyTasks(dailyTasks, report_id);
     }
   });
 };
 
-const getReports = (req, res) => {
+function doubleCheckReport(date) {
+  return new Promise((resolve, reject) => {
+    const sql = `select * from ${tables.reports} where date = ?`;
+    const values = [date];
+    connection.query(sql, values, (error, rows) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(rows);
+    });
+  });
+}
+
+function createReport(date, user_id, report_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `insert into ${tables.reports} (report_id, user_id, date) values (?, ?, ?)`;
+    const values = [report_id, user_id, date];
+    connection.query(sql, values, (error, results) => {
+      if (error) {
+        return reject();
+      }
+      resolve();
+    });
+  });
+}
+function createDailyTasks(dailyTasks, report_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `insert into ${tables.dailyTasks} (dailytask_id, report_id, task_id, result, improve ) values ?`;
+    let values = [];
+    dailyTasks.map((dailyTask, i) => {
+      const dailytask_id = generateRandomString(35);
+      const value = [
+        dailytask_id,
+        report_id,
+        dailyTask.task_id,
+        dailyTask.result,
+        dailyTask.improve,
+      ];
+      values.push(value);
+    });
+    connection.query(sql, [values], (error, results) => {
+      if (error) {
+        return reject();
+      }
+      resolve(results);
+    });
+  });
+}
+
+const getReportsApi = (req, res) => {
   const { date } = req.query;
   let sql = `SELECT r.title, u.user_name, u.img, r.created_at
   FROM ${tables.reports} r
@@ -43,6 +99,6 @@ const getReports = (req, res) => {
 };
 
 module.exports = {
-  createReport,
-  getReports,
+  createReportApi,
+  getReportsApi,
 };

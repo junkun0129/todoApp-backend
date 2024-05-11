@@ -6,12 +6,10 @@ const controller = require("../controller/user.controller");
 
 router.post("/edit", auth, controller.editUserProfile);
 router.post("/get", auth, controller.getUserProfile);
+router.post("/imgupdate", auth, controller.updateProfileImage);
 router.post(
   "/updimg",
   (req, res, next) => {
-    console.log(req.body);
-    console.log(req.files, "filenames");
-    console.log(req.file, "filename");
     if (!req.files) {
       console.log("no file data");
       return res

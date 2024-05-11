@@ -60,6 +60,18 @@ function rollbackTransaction(connection) {
   });
 }
 
+async function transaction(connection, res, callback) {
+  try {
+    await beginTransaction(connection);
+    callback();
+    await commitTransaction(connection);
+    return res.status(200).json({ message: "成功しました", result: "success" });
+  } catch (err) {
+    await rollbackTransaction(connection);
+    return res.status(500);
+  }
+}
+
 module.exports = {
   generateRandomString,
   getUserId,
@@ -67,4 +79,5 @@ module.exports = {
   beginTransaction,
   commitTransaction,
   rollbackTransaction,
+  transaction,
 };

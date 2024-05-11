@@ -1,4 +1,6 @@
 const { connection } = require("../db/mysql");
+const jwt = require("jsonwebtoken");
+const { tables } = require("../../config").querys;
 const editUserProfile = (req, res) => {
   const { email, firstName, lastName } = req.body;
   const sql = "UPDATE USERS SET first_name = ?, last_name = ? WHERE email = ?";
@@ -16,7 +18,7 @@ const editUserProfile = (req, res) => {
 
 const getUserProfile = (req, res) => {
   const { email } = req.body;
-  const sql = "select * from USERS where email = ?";
+  const sql = `select * from ${tables.users} where email = ?`;
   const values = [email];
   connection.query(sql, values, (err, rows) => {
     if (err) {
@@ -48,8 +50,39 @@ const updateImage = (req, res) => {
   res.status(200).json({ message: "oi" });
 };
 
+const updateProfileImage = (req, res) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  const decodedToken = jwt.decode(token, { complete: true });
+  const userEmail = decodedToken.payload.email;
+  const imageFile = req.files.file;
+  const imageName = userEmail + "." + imageFile.name.split(".")[1];
+  let uploadPath = __dirname + "/.." + "/user_folders/" + imageName;
+  imageFile.mv(uploadPath, (err) => {
+    if (err) return res.status(500);
+    const sql = `update ${tables.users} set img = ? where email = ?`;
+    const timestamp =
+      new Date().getTime() + Math.floor(Math.random() * 1000000);
+
+    const updatedimgName = imageName + "?tm=" + timestamp;
+
+    const values = [updatedimgName, userEmail];
+    connection.query(sql, values, (err, result) => {
+      if (err) return res.status(500);
+      return res
+        .status(200)
+        .json({ result: "success", message: "画像の保存に成功しました" });
+    });
+  });
+  if (!req.files) {
+    console.log("no file data");
+    return res.status(400).json({ message: "ファイルが見つかりませんでした" });
+  }
+};
+
 module.exports = {
   editUserProfile,
   getUserProfile,
   updateImage,
+  updateProfileImage,
 };
