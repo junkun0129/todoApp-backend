@@ -63,9 +63,9 @@ function rollbackTransaction(connection) {
 async function transaction(connection, res, callback) {
   try {
     await beginTransaction(connection);
-    callback();
+    const response = await callback();
     await commitTransaction(connection);
-    return res.status(200).json({ message: "成功しました", result: "success" });
+    return response;
   } catch (err) {
     await rollbackTransaction(connection);
     return res.status(500);

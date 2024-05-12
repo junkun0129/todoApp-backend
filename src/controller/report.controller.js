@@ -18,12 +18,21 @@ const createReportApi = async (req, res) => {
     const rows = await doubleCheckReport(date);
     console.log(rows, "rowssssssssssssss");
     if (rows.length) {
+      return res.status(200).json({
+        message: "選択された日付では同じレポートがすでに提出されています",
+        result: "success",
+      });
     } else {
       const report_id = generateRandomString(35);
       const user_id = getUserId(req);
 
       await createReport(date, user_id, report_id);
+      console.log("report created");
       await createDailyTasks(dailyTasks, report_id);
+      console.log("dailytasks created");
+      return res
+        .status(200)
+        .json({ message: "成功しました", result: "success" });
     }
   });
 };
@@ -55,7 +64,7 @@ function createReport(date, user_id, report_id) {
 }
 function createDailyTasks(dailyTasks, report_id) {
   return new Promise((resolve, reject) => {
-    const sql = `insert into ${tables.dailyTasks} (dailytask_id, report_id, task_id, result, improve ) values ?`;
+    const sql = `insert into ${tables.dailyTasks} (dailytask_id, report_id, task_id, result, improve, starttime, endtime ) values ?`;
     let values = [];
     dailyTasks.map((dailyTask, i) => {
       const dailytask_id = generateRandomString(35);
@@ -65,10 +74,14 @@ function createDailyTasks(dailyTasks, report_id) {
         dailyTask.task_id,
         dailyTask.result,
         dailyTask.improve,
+        dailyTask.starttime,
+        dailyTask.endtime,
       ];
       values.push(value);
     });
     connection.query(sql, [values], (error, results) => {
+      console.log(results, "results");
+      console.log(error, "error");
       if (error) {
         return reject();
       }
