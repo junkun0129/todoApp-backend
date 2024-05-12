@@ -16,7 +16,6 @@ const createReportApi = async (req, res) => {
 
   transaction(connection, res, async () => {
     const rows = await doubleCheckReport(date);
-    console.log(rows, "rowssssssssssssss");
     if (rows.length) {
       return res.status(200).json({
         message: "選択された日付では同じレポートがすでに提出されています",
@@ -27,9 +26,7 @@ const createReportApi = async (req, res) => {
       const user_id = getUserId(req);
 
       await createReport(date, user_id, report_id);
-      console.log("report created");
       await createDailyTasks(dailyTasks, report_id);
-      console.log("dailytasks created");
       return res
         .status(200)
         .json({ message: "成功しました", result: "success" });
@@ -67,7 +64,10 @@ function createDailyTasks(dailyTasks, report_id) {
     const sql = `insert into ${tables.dailyTasks} (dailytask_id, report_id, task_id, result, improve, starttime, endtime ) values ?`;
     let values = [];
     dailyTasks.map((dailyTask, i) => {
-      const dailytask_id = generateRandomString(35);
+      const dailytask_id = dailyTask.task_id
+        ? generateRandomString(35)
+        : "memo";
+
       const value = [
         dailytask_id,
         report_id,
