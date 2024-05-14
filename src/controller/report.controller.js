@@ -5,10 +5,6 @@ const {
   getUserId,
   transaction,
 } = require("../utils/common.util");
-const {
-  beginTransaction,
-  rollbackTransaction,
-} = require("../utils/common.util");
 const jwt = require("jsonwebtoken");
 
 const createReportApi = async (req, res) => {
@@ -91,25 +87,62 @@ function createDailyTasks(dailyTasks, report_id) {
 }
 
 const getReportsApi = (req, res) => {
-  const { date } = req.query;
-  let sql = `SELECT r.title, u.user_name, u.img, r.created_at
-  FROM ${tables.reports} r
-  JOIN ${tables.users} u ON r.user_id = u.user_id
-  WHERE 1=1
-  `;
+  const { user } = req.query;
 
-  if (date) {
-    sql += `and created_at = ${date}`;
-  }
+  let sql = `select * from ${tables.reports} where 1=1`;
+  transaction(connection, res, async () => {
+    const reports = await getReports(user);
+    console.log("reports", reports);
+    if (!reports.length) {
+      return res.status(200).json({
+        message: "レポートがありません",
+        result: "success",
+      });
+    } else {
+      let dataPromises = reports.map(async (report, i) => {
+        const dailytasks = await getDailyTasks(report.report_id);
+        const child = { report: { date: report.date }, dailytasks };
+        console.log(child, "child");
+        return child;
+      });
+      const data = await Promise.all(dataPromises);
 
-  connection.query(sql, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ message: "", result: "failed" });
+      console.log(data, "data");
+      return res.status(200).json({
+        result: "success",
+        data,
+      });
     }
-    console.log(rows);
-    return res.status(200).json({ result: "success", data: rows });
   });
 };
+
+function getReports(user_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `select * from ${tables.reports} where user_id = ?`;
+    const values = [user_id];
+    connection.query(sql, values, (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(rows);
+    });
+  });
+}
+
+function getDailyTasks(report_id) {
+  return new Promise((resolve, reject) => {
+    const sql = `select * from ${tables.dailyTasks} where report_id = ?`;
+    const values = [report_id];
+    console.log(report_id, "report_id");
+    connection.query(sql, values, (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+      console.log(rows, "rows");
+      resolve(rows);
+    });
+  });
+}
 
 module.exports = {
   createReportApi,

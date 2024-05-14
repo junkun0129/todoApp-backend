@@ -7,17 +7,6 @@ const controller = require("../controller/user.controller");
 router.post("/edit", auth, controller.editUserProfile);
 router.post("/get", auth, controller.getUserProfile);
 router.post("/imgupdate", auth, controller.updateProfileImage);
-router.post(
-  "/updimg",
-  (req, res, next) => {
-    if (!req.files) {
-      console.log("no file data");
-      return res
-        .status(400)
-        .json({ message: "ファイルが見つかりませんでした" });
-    }
-    return res.status(200).json({ message: "いえい" });
-  },
-  controller.updateImage
-);
+router.get("/list", auth, controller.getUserList);
+
 module.exports = router;

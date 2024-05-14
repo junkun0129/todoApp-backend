@@ -80,9 +80,22 @@ const updateProfileImage = (req, res) => {
   }
 };
 
+const getUserList = (req, res) => {
+  const sql = `select email, user_id, user_name, img from ${tables.users}`;
+  connection.query(sql, (err, rows) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ message: "取得できませんでした", result: "failed" });
+    }
+    return res.status(200).json({ result: "success", data: rows });
+  });
+};
+
 module.exports = {
   editUserProfile,
   getUserProfile,
   updateImage,
   updateProfileImage,
+  getUserList,
 };
