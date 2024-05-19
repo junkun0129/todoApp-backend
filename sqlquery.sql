@@ -18,6 +18,8 @@ create table dailytasks (
     CONSTRAINT fk_task_id FOREIGN KEY (task_id) REFERENCES tasks(task_id)
 );
 
+    
+
  `SELECT r.title, u.user_name, u.img, r.created_at
   FROM ${tables.reports} r
   JOIN ${tables.users} u ON r.user_id = u.user_id

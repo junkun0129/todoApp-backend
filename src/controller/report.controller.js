@@ -8,21 +8,24 @@ const {
 const jwt = require("jsonwebtoken");
 
 const createReportApi = async (req, res) => {
-  const { date, dailyTasks } = req.body;
-
+  const { report, dailyTasks } = req.body;
+  console.log(report, "report");
   transaction(connection, res, async () => {
-    const rows = await doubleCheckReport(date);
+    const rows = await doubleCheckReport(report);
     if (rows.length) {
       return res.status(200).json({
         message: "選択された日付では同じレポートがすでに提出されています",
         result: "success",
       });
     } else {
+      console.log("past double check");
       const report_id = generateRandomString(35);
       const user_id = getUserId(req);
 
-      await createReport(date, user_id, report_id);
+      await createReport(report, user_id, report_id);
+      console.log("past create report");
       await createDailyTasks(dailyTasks, report_id);
+      console.log("past create dailytasks");
       return res
         .status(200)
         .json({ message: "成功しました", result: "success" });
@@ -30,10 +33,11 @@ const createReportApi = async (req, res) => {
   });
 };
 
-function doubleCheckReport(date) {
+function doubleCheckReport(report) {
   return new Promise((resolve, reject) => {
-    const sql = `select * from ${tables.reports} where date = ?`;
-    const values = [date];
+    const { category, date } = report;
+    const sql = `select * from ${tables.reports} where date = ? and category = ?`;
+    const values = [date, category];
     connection.query(sql, values, (error, rows) => {
       if (error) {
         return reject(error);
@@ -43,11 +47,14 @@ function doubleCheckReport(date) {
   });
 }
 
-function createReport(date, user_id, report_id) {
+function createReport(report, user_id, report_id) {
   return new Promise((resolve, reject) => {
-    const sql = `insert into ${tables.reports} (report_id, user_id, date) values (?, ?, ?)`;
-    const values = [report_id, user_id, date];
+    const { status, hours, category, date } = report;
+    console.log("report inside createReport", report);
+    const sql = `insert into ${tables.reports} (report_id, user_id, date, status, hours, category) values (?, ?, ?, ?, ?, ?)`;
+    const values = [report_id, user_id, date, status, hours, category];
     connection.query(sql, values, (error, results) => {
+      console.log(error);
       if (error) {
         return reject();
       }
@@ -57,14 +64,12 @@ function createReport(date, user_id, report_id) {
 }
 function createDailyTasks(dailyTasks, report_id) {
   return new Promise((resolve, reject) => {
-    const sql = `insert into ${tables.dailyTasks} (dailytask_id, report_id, task_id, result, improve, starttime, endtime ) values ?`;
+    const sql = `insert into ${tables.dailyTasks} (dailytask_id, report_id, task_id, result, improve, starttime, endtime, category ) values ?`;
     let values = [];
     dailyTasks.map((dailyTask, i) => {
-      const dailytask_id = dailyTask.task_id
-        ? generateRandomString(35)
-        : "memo";
+      const dailytask_id = generateRandomString(35);
 
-      const value = [
+      let value = [
         dailytask_id,
         report_id,
         dailyTask.task_id,
@@ -72,9 +77,12 @@ function createDailyTasks(dailyTasks, report_id) {
         dailyTask.improve,
         dailyTask.starttime,
         dailyTask.endtime,
+        dailyTask.task_id ? null : "memo",
       ];
+
       values.push(value);
     });
+    console.log(values, "values");
     connection.query(sql, [values], (error, results) => {
       console.log(results, "results");
       console.log(error, "error");
