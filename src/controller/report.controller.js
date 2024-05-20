@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 
 const createReportApi = async (req, res) => {
   const { report, dailyTasks } = req.body;
+
   console.log(report, "report");
   transaction(connection, res, async () => {
     const rows = await doubleCheckReport(report);
@@ -18,14 +19,11 @@ const createReportApi = async (req, res) => {
         result: "success",
       });
     } else {
-      console.log("past double check");
       const report_id = generateRandomString(35);
       const user_id = getUserId(req);
 
       await createReport(report, user_id, report_id);
-      console.log("past create report");
       await createDailyTasks(dailyTasks, report_id);
-      console.log("past create dailytasks");
       return res
         .status(200)
         .json({ message: "成功しました", result: "success" });
@@ -50,8 +48,8 @@ function doubleCheckReport(report) {
 function createReport(report, user_id, report_id) {
   return new Promise((resolve, reject) => {
     const { status, hours, category, date } = report;
-    console.log("report inside createReport", report);
     const sql = `insert into ${tables.reports} (report_id, user_id, date, status, hours, category) values (?, ?, ?, ?, ?, ?)`;
+    console.log(date, "datteeeeeeeeeeeeee");
     const values = [report_id, user_id, date, status, hours, category];
     connection.query(sql, values, (error, results) => {
       console.log(error);
@@ -82,10 +80,7 @@ function createDailyTasks(dailyTasks, report_id) {
 
       values.push(value);
     });
-    console.log(values, "values");
     connection.query(sql, [values], (error, results) => {
-      console.log(results, "results");
-      console.log(error, "error");
       if (error) {
         return reject();
       }
@@ -100,7 +95,6 @@ const getReportsApi = (req, res) => {
   let sql = `select * from ${tables.reports} where 1=1`;
   transaction(connection, res, async () => {
     const reports = await getReports(user);
-    console.log("reports", reports);
     if (!reports.length) {
       return res.status(200).json({
         message: "レポートがありません",
@@ -109,16 +103,34 @@ const getReportsApi = (req, res) => {
     } else {
       let dataPromises = reports.map(async (report, i) => {
         const dailytasks = await getDailyTasks(report.report_id);
-        const child = { report: { date: report.date }, dailytasks };
-        console.log(child, "child");
+        const child = { report, dailytasks };
         return child;
       });
       const data = await Promise.all(dataPromises);
 
-      console.log(data, "data");
+      let grouped = {};
+      data.forEach((item) => {
+        if (!grouped[item.report.date]) {
+          grouped[item.report.date] = {
+            date: item.report.date,
+            plan: null,
+            result: null,
+          };
+        }
+
+        if (item.report.category === "plan") {
+          grouped[item.report.date].plan = item;
+        }
+        if (item.report.category === "result") {
+          grouped[item.report.date].result = item;
+        }
+      });
+      const pairedReports = Object.values(grouped);
+      console.log(pairedReports, "pairrrrrrrrrrrrrrrrrrrrrrr");
+
       return res.status(200).json({
         result: "success",
-        data,
+        data: pairedReports,
       });
     }
   });
@@ -132,6 +144,7 @@ function getReports(user_id) {
       if (err) {
         return reject(err);
       }
+
       resolve(rows);
     });
   });
@@ -141,12 +154,10 @@ function getDailyTasks(report_id) {
   return new Promise((resolve, reject) => {
     const sql = `select * from ${tables.dailyTasks} where report_id = ?`;
     const values = [report_id];
-    console.log(report_id, "report_id");
     connection.query(sql, values, (err, rows) => {
       if (err) {
         return reject(err);
       }
-      console.log(rows, "rows");
       resolve(rows);
     });
   });
