@@ -17,9 +17,9 @@ const editUserProfile = (req, res) => {
 };
 
 const getUserProfile = (req, res) => {
-  const { email } = req.body;
-  const sql = `select * from ${tables.users} where email = ?`;
-  const values = [email];
+  const { user_id } = req.body;
+  const sql = `select * from ${tables.users} where user_id = ?`;
+  const values = [user_id];
   connection.query(sql, values, (err, rows) => {
     if (err) {
       return res
@@ -31,8 +31,7 @@ const getUserProfile = (req, res) => {
       const data = {
         user_id: user.user_id,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        user_name: user.user_name,
         img: process.env.BASE_DOMAIN + "/image/" + user.img,
       };
       return res.status(200).json({ result: "success", data });
