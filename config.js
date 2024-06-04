@@ -16,6 +16,7 @@ module.exports = {
       users: "users",
       tasks: "tasks",
       dailyTasks: "dailytasks",
+      taskcomments: "taskcomments",
     },
   },
 };
