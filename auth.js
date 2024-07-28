@@ -5,7 +5,7 @@ const auth = (req, res, next) => {
   try {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
-
+    console.log(token, "token");
     const decoded = jwt.verify(token, config.jwt.secret);
     console.log("nextいけたよ");
     next();

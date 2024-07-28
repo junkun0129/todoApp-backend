@@ -65,7 +65,7 @@ const signin = (req, res) => {
           };
           const token = jwt.sign(payload, config.jwt.secret, {
             algorithm: config.jwtAlgorithm,
-            expiresIn: is_stay_login ? config.expiresLong : config.expiresShort,
+            expiresIn: config.expiresLong,
           });
           return res.status(200).json({
             message: "ログインに成功しました",

@@ -140,9 +140,11 @@ const createTaskApi = (req, res) => {
 
   transaction(connection, res, async () => {
     const order = await getTasksByStatus(status);
+    console.log(order, "order");
     const userId = getUserId(req);
-    await createTask(userId, title, body, status);
-
+    console.log(userId, "userId");
+    await createTask(userId, title, body, status, order);
+    console.log("object");
     return res.status(200).json({ message: "成功しました", result: "success" });
   });
 };
@@ -166,11 +168,14 @@ function createTask(userId, title, body, status, order) {
     const taskId = generateRandomString(35);
 
     const values = [taskId, userId, title, body, status, order];
+    console.log(values, "createTaskValues");
     const sql = `insert into ${tables.tasks} (task_id, user_id, title, body, status, task_order) values (?, ?, ?, ?, ?, ?)`;
     connection.query(sql, values, (err, result) => {
       if (err) {
+        console.log(err);
         reject(err);
       }
+      console.log(result, "result");
       resolve(result);
     });
   });

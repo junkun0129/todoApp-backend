@@ -18,6 +18,15 @@ create table dailytasks (
     CONSTRAINT fk_task_id FOREIGN KEY (task_id) REFERENCES tasks(task_id)
 );
 
+
+create table taskcomments (
+    taskcomment_id VARCHAR(36) PRIMARY KEY,
+    task_id VARCHAR(36),
+    user_id VARCHAR(36),
+    body text,
+    CONSTRAINT fk_tasks_taskcomments FOREIGN KEY (task_id) REFERENCES tasks(task_id),
+    CONSTRAINT fk_users_taskcomments FOREIGN KEY (user_id) REFERENCES tasks(user_id)
+)
     
 
  `SELECT r.title, u.user_name, u.img, r.created_at
