@@ -5,6 +5,7 @@ const { tables } = require("../../config").querys;
 const { generateRandomString } = require("../utils/common.util");
 const config = require("../../config");
 const signup = (req, res) => {
+  console.log("dddddddd");
   const { email, password, user_name } = req.body;
   const sql = "select * from USERS where email = ?";
   connection.query(sql, [email], (err, rows) => {

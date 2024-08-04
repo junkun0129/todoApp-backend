@@ -49,7 +49,6 @@ function createReport(report, user_id, report_id) {
   return new Promise((resolve, reject) => {
     const { status, hours, category, date } = report;
     const sql = `insert into ${tables.reports} (report_id, user_id, date, status, hours, category) values (?, ?, ?, ?, ?, ?)`;
-    console.log(date, "datteeeeeeeeeeeeee");
     const values = [report_id, user_id, date, status, hours, category];
     connection.query(sql, values, (error, results) => {
       console.log(error);
@@ -89,12 +88,20 @@ function createDailyTasks(dailyTasks, report_id) {
   });
 }
 
-const getReportsApi = (req, res) => {
-  const { user } = req.query;
-
-  let sql = `select * from ${tables.reports} where 1=1`;
+const getReportApi = (req, res) => {
+  console.log("lskdj");
   transaction(connection, res, async () => {
-    const reports = await getReports(user);
+    const report = await getReports(req, req.query);
+    return res.status(200).json({
+      data: report,
+      result: "success",
+    });
+  });
+};
+
+const getReportsApi = (req, res) => {
+  transaction(connection, res, async () => {
+    const reports = await getReports(req);
     if (!reports.length) {
       return res.status(200).json({
         message: "レポートがありません",
@@ -126,7 +133,6 @@ const getReportsApi = (req, res) => {
         }
       });
       const pairedReports = Object.values(grouped);
-      console.log(pairedReports, "pairrrrrrrrrrrrrrrrrrrrrrr");
 
       return res.status(200).json({
         result: "success",
@@ -136,9 +142,20 @@ const getReportsApi = (req, res) => {
   });
 };
 
-function getReports(user_id) {
+function getReports(req, query = null) {
   return new Promise((resolve, reject) => {
-    const sql = `select * from ${tables.reports} where user_id = ?`;
+    const user_id = getUserId(req);
+    let sql = `select * from ${tables.reports} where user_id = ?`;
+    if (query) {
+      const { date, category } = query;
+      if (date) {
+        sql += ` and date = '${date}'`;
+      }
+
+      if (category) {
+        sql += ` and category = '${category}'`;
+      }
+    }
     const values = [user_id];
     connection.query(sql, values, (err, rows) => {
       if (err) {
@@ -166,4 +183,5 @@ function getDailyTasks(report_id) {
 module.exports = {
   createReportApi,
   getReportsApi,
+  getReportApi,
 };

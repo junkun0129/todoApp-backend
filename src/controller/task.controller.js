@@ -140,9 +140,7 @@ const createTaskApi = (req, res) => {
 
   transaction(connection, res, async () => {
     const order = await getTasksByStatus(status);
-    console.log(order, "order");
     const userId = getUserId(req);
-    console.log(userId, "userId");
     await createTask(userId, title, body, status, order);
     console.log("object");
     return res.status(200).json({ message: "成功しました", result: "success" });
